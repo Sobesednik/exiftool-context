@@ -1,1 +1,3 @@
-module.exports = require('./ExiftoolContext')
+const context = require('./ExiftoolContext')
+
+module.exports = context

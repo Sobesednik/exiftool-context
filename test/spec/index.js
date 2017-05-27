@@ -53,6 +53,25 @@ const myModuleTestSuite = {
         assert(ctx.ep instanceof MockExiftool)
         assert(ctx.ep.created)
     },
+    'should be able to set and use global exiftool constructor': {
+        'should set global': () => {
+            ExiftoolContext.globalExiftoolConstructor = MockExiftool
+        },
+        'should create using global': (ctx) => {
+            ctx.create()
+            assert(ctx.ep instanceof MockExiftool)
+            assert(ctx.ep.created)
+        },
+    },
+    'should be able to unset global and use default contructor': {
+        'should unset global': () => {
+            ExiftoolContext.globalExiftoolConstructor = null
+        },
+        'should create using default': (ctx) => {
+            ctx.create()
+            assert(ctx.ep instanceof exiftool.ExiftoolProcess)
+        },
+    },
 }
 
 module.exports = myModuleTestSuite
