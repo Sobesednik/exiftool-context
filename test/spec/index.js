@@ -1,5 +1,13 @@
+'use strict'
 const assert = require('assert')
+const exiftool = require('node-exiftool')
 const ExiftoolContext = require('../../src/')
+
+class MockExiftool {
+    constructor() {
+        this.created = true
+    }
+}
 
 const myModuleTestSuite = {
     context: ExiftoolContext,
@@ -11,7 +19,7 @@ const myModuleTestSuite = {
         ExiftoolContext.call(context)
         assert.equal(context._ep, null)
     },
-    'should have correct metadata': (ctx) => {
+    'should read correct metadata': (ctx) => {
         const ep = ctx.create()
         return ep.open().then(() => {
             return ep.readMetadata(ctx.jpegFile)
@@ -31,7 +39,20 @@ const myModuleTestSuite = {
                 )
                 assert.equal(res.error, null)
             })
-},
+    },
+    'should have ExiftoolProcess as default constructor': (ctx) => {
+        assert.strictEqual(ctx.exiftoolConstructor, exiftool.ExiftoolProcess)
+    },
+    'should be able to specify ExiftoolProcess prototype': (ctx) => {
+        ctx.exiftoolConstructor = MockExiftool
+        assert.equal(ctx.exiftoolConstructor, MockExiftool)
+    },
+    'should create ep with given constructor': (ctx) => {
+        ctx.exiftoolConstructor = MockExiftool
+        ctx.create()
+        assert(ctx.ep instanceof MockExiftool)
+        assert(ctx.ep.created)
+    },
 }
 
 module.exports = myModuleTestSuite
