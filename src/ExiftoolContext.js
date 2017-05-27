@@ -1,18 +1,16 @@
 const assert = require('assert')
-const exiftoolBin = require('dist-exiftool')
 const fs = require('fs')
-const os = require('os')
 const path = require('path')
-const wrote = require('wrote')
-const makePromise = require('makepromise')
+const os = require('os')
+const exiftoolBin = require('dist-exiftool')
 const exiftool = require('node-exiftool')
 
 // exiftool will print "File not found: test/fixtures/no_such_file.jpg"
 // with forward slashes independent of platform
 const replaceSlashes = str => str.replace(/\\/g, '/')
 
-const etcDir = path.join(__dirname, '../etc/')
 const fixturesDir = 'fixtures'
+const etcDir = path.join(__dirname, '../etc')
 const jpegFile = path.join(etcDir, fixturesDir, 'CANON', 'IMG_9858.JPG')
 const jpegFile2 = path.join(etcDir, fixturesDir, 'CANON', 'IMG_9859.JPG')
 const fileDoesNotExist = replaceSlashes(path.join(etcDir, fixturesDir, 'no_such_file.jpg'))
@@ -22,28 +20,20 @@ const emptyFolder = path.join(etcDir, fixturesDir, 'empty')
 const filenameWithEncoding = path.join(etcDir, fixturesDir, 'Fọto.jpg')
 
 // create temp file for writing metadata
-function makeTempFile(inputFile, extension) {
+function makeTempFile() {
     const n = Math.floor(Math.random() * 100000)
-    const tempFile = path.join(os.tmpdir(), `exiftool-contex_${n}.${extension}`)
-    return wrote(tempFile)
-        .then((ws) => {
-            return new Promise((resolve, reject) => {
-                if (inputFile) {
-                    const rs = fs.createReadStream(inputFile)
-                    rs.once('error', reject)
-                    rs.once('close', () => resolve(ws))
-                    rs.pipe(ws)
-                } else {
-                    resolve(ws)
-                }
-            })
-            .then((ws) => {
-                return makePromise(ws.end.bind(ws), null, tempFile)
-            })
+    const tempFile = path.join(os.tmpdir(), `node-exiftool_test_${n}.jpg`)
+    return new Promise((resolve, reject) => {
+        const rs = fs.createReadStream(jpegFile)
+        const ws = fs.createWriteStream(tempFile)
+        rs.on('error', reject)
+        ws.on('error', reject)
+        ws.on('close', () => {
+            resolve(tempFile)
         })
+        rs.pipe(ws)
+    })
 }
-
-const unlinkTempFile = tempFile => makePromise(fs.unlink, tempFile, tempFile)
 
 function assertJpegMetadata(file) {
     const mask = {
@@ -60,7 +50,11 @@ function assertJpegMetadata(file) {
         })
 }
 
-function ExiftoolContext() {
+const unlinkTempFile = tempFile => new Promise((resolve, reject) =>
+    fs.unlink(tempFile, err => (err ? reject(err) : resolve(tempFile)))
+)
+
+const context = function Context() {
     this._ep = null
 
     Object.assign(this, {
@@ -76,12 +70,6 @@ function ExiftoolContext() {
         jpegFile: { get: () => jpegFile },
         jpegFile2: { get: () => jpegFile2 },
         tempFile: { get: () => this._tempFile },
-        dataFile: {
-            get: () => this._dataFile,
-            set: (value) => {
-                this._dataFile = value
-            },
-        },
         defaultBin: { get: () => 'exiftool' },
         replaceSlashes: { get: () => replaceSlashes },
 
@@ -95,9 +83,9 @@ function ExiftoolContext() {
             this._ep = ep
             return this
         }},
-        open: { value: (encoding, file, debug) => {
+        open: { value: () => {
             if (this.ep)
-                return this.ep.open(encoding, file, debug)
+                return this.ep.open()
             throw new Error('ep has not been created')
         }},
         createOpen: { value: (bin) => {
@@ -132,50 +120,16 @@ function ExiftoolContext() {
             if (this._tempFile) {
                 return Promise.reject(new Error('Temp file is already created.'))
             }
-            return makeTempFile(jpegFile, 'jpg')
+            return makeTempFile()
                 .then((res) => {
                     this._tempFile = res
                     return res
                 })
         }},
-        createDataFile: { value: function createDataFile(inputFile, extension) {
-            if (this._dataFile) {
-                return Promise.resolve(this._dataFile)
-                // return Promise.reject(new Error('Data file is already created.'))
-            }
-            return makeTempFile(inputFile, extension)
-                .then((res) => {
-                    this._dataFile = res
-                    return res
-                })
-        }},
-        writeToDataFile: { value: function writeToDataFile(data) {
-            if (!this.dataFile) {
-                return Promise.reject(new Error('Data file is not available.'))
-            }
-            return wrote(this.dataFile)
-                .then((ws) => {
-                    this._ws = ws
-                })
-            // return createWriteStream(this._dataFile, {
-                // flags: 'a',
-            // })
-                .then((ws) => { this._ws = ws })
-                .then(() => makePromise(this._ws.write.bind(this._ws), data))
-                .then(() => makePromise(this._ws.end.bind(this._ws)))
-        }},
-        _destroy: { value: () => {
+        _destroy: { get: () => {
             const promises = []
             if (this.ep && this.ep.isOpen) {
-                promises.push(this.ep.close()
-                    .then(() => {
-                        if (this.dataFile) {
-                            return unlinkTempFile(this.dataFile)
-                        }
-                    })
-                )
-            } else if (this.dataFile) {
-                promises.push(unlinkTempFile(this.dataFile))
+                promises.push(this.ep.close())
             }
             if (this.tempFile) {
                 promises.push(unlinkTempFile(this.tempFile))
@@ -185,4 +139,4 @@ function ExiftoolContext() {
     })
 }
 
-module.exports = ExiftoolContext
+module.exports = context
