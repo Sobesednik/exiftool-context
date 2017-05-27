@@ -1,9 +1,13 @@
+'use strict'
+
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
 const exiftoolBin = require('dist-exiftool')
 const exiftool = require('node-exiftool')
+
+let exiftoolContructor = exiftool.ExiftoolProcess // global
 
 // exiftool will print "File not found: test/fixtures/no_such_file.jpg"
 // with forward slashes independent of platform
@@ -56,7 +60,7 @@ const unlinkTempFile = tempFile => new Promise((resolve, reject) =>
 
 const context = function Context() {
     this._ep = null
-    this._exiftoolConstructor = exiftool.ExiftoolProcess
+    this._exiftoolConstructor = exiftoolContructor
 
     Object.assign(this, {
         fileDoesNotExist,
@@ -147,5 +151,17 @@ const context = function Context() {
         }},
     })
 }
+
+Object.defineProperties(context, {
+    globalExiftoolConstructor: { get: () => {
+        return exiftoolContructor
+    }, set: (value) => {
+        if (typeof value === 'function') {
+            exiftoolContructor = value
+        } else if (value === null) {
+            exiftoolContructor = exiftool.ExiftoolProcess
+        }
+    }},
+})
 
 module.exports = context
