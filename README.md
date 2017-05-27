@@ -49,56 +49,120 @@ Executed 1 tests.
 
 ## API
 
-These functions and properties are available:
+Fixtures are found in `./etc` directory. These functions and properties are available:
 
-### jpegFile: { get: () => jpegFile }
-### jpegFile2: { get: () => jpegFile2 }
-### tempFile: { get: () => this._tempFile }
-### dataFile: { get: () => this._dataFile, set: (value) => { this._dataFile = value } }
-### defaultBin: { get: () => 'exiftool' }
+### jpegFile
 
-### replaceSlashes() // exiftool will print "File not found: test/fixtures/no_such_file.jpg"
+`CANON/IMG_9858.JPG`
+
+### jpegFile2
+
+`CANON/IMG_9859.JPG`
+
+### tempFile
+
+You need to call `ctx.createTempFile` first, after which this will be set to a temp
+jpeg file, into which you can write some metadata.
+
+### dataFile
+
+You need to call `ctx.createDataFile` first, after which this will be set to a data
+file which can be used to open exiftool with and write commands to.
+
+### defaultBin
+
+Returns `exiftool`.
+
+### static replaceSlashes()
+
+`exiftool` will print "File not found: test/fixtures/no_such_file.jpg" in case of error,
+even on windows. use this function to replace slashes on your platform.
 
 ### fileDoesNotExist
+
+`no_such_file.jpg`
+
 ### fileDoesNotExist2
+
+`no_such_file2.jpg`
+
 ### folder
+
+`CANON`
+
 ### emptyFolder
+
+`empty`
+
 ### filenameWithEncoding
+
+`Fọto`
+
 ### assertJpegMetadata
 
-### ep(): this._ep
+A function which has hard-coded metadata in it to assert against fixtures metadata.
 
-Getter for intance's ep
+### ep
 
-### create(bin): this._ep = new exiftool.ExiftoolProcess(bin)
+An `ExiftoolProcess` instance. it is not set at first, call `ctx.create()` before accessing.
+
+### create(bin)
+
+```js
+this._ep = new exiftool.ExiftoolProcess(bin)
+```
 
 Create a new instance with given bin, and assign it to self.
 
-### open(encoding, file, debug): ep.open(encoding, file, debug)
+### open(encoding, file, debug)
 
-Open current instance
+Open a new instance
 
-### createOpen(bin): this.create(bin).open()
+### createOpen(bin)
+
+```js
+this.create(bin).open()
+```
 
 Create instance and open it
 
-### close: ep.close()
+### close()
+
+```js
+this.ep.close()
+```
 
 Close instance
 
-### readMetadata: ep.readMetadata()
+### readMetadata()
+
+```js
+ep.readMetadata()
+```
 
 Read metadata of a file
 
-### writeMetadata: ep.writeMetadata()
+### writeMetadata()
+
+```js
+ep.writeMetadata()
+```
 
 Write metadata to a file
 
-### initAndReadMetadata: ep.open.readMetadata()
+### initAndReadMetadata()
+
+```js
+ep.open.readMetadata()
+```
 
 Open ExiftoolProcess and read metadata
 
-### initAndWriteMetadata: ep.open.writeMetadata()
+### initAndWriteMetadata()
+
+```js
+ep.open.writeMetadata()
+```
 
 Open ExiftoolProcess and write metadata
 
@@ -114,7 +178,7 @@ Create a data file which can be used to open `exiftool`
 
 Write some data to the data file.
 
-### _destroy:
+### _destroy()
 
 Perform the following:
 
@@ -124,17 +188,16 @@ Perform the following:
 
 That is, make sure that tests do not have open processes after them, or temp files.
 
-
 ## What is a Test Context
 
-A test context is an object (or instance of a class) which is available to tests via
-`ctx` argument. This is implemented in `zoroaster` test runner. It allows to abstract
-individual test contexts to be used in tests. That makes maintanence of test files
-so much easier, when they don't have to rely on global scope of each other. Improved
-code reuse, refactor and readily available testing allows to create unique and
-specifically tailored tests contexts to be used in bespoke and Open Source software.
+A test context is an object which is available to tests via `ctx` argument. This is
+implemented in `zoroaster` test runner. It allows to abstract individual test contexts.
+That makes maintanence of test files easier when they don't have to rely on global scope
+of each other. You can create unique and specific tests contexts to be used in testing
+of your application. Save time by reusing the code, and using tests as a tool, and not
+the other way around.
 
-To learn more about the idea of test contexs, visit [zoroaster documentation](https://zoroaster.co.uk/test-context).
+To learn more about the idea of test contexts, read [zoroaster documentation](https://zoroaster.co.uk/test-context).
 
 ---
 
