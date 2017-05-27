@@ -22,5 +22,11 @@
   "homepage": "https://github.com/Sobesednik/exiftool-context#readme",
   "devDependencies": {
     "zoroaster": "0.4.4"
+  },
+  "dependencies": {
+    "dist-exiftool": "^10.53.0",
+    "makepromise": "^1.0.0",
+    "node-exiftool": "^2.1.5",
+    "wrote": "^0.2.0"
   }
 }
