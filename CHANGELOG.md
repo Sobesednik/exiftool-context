@@ -1,4 +1,4 @@
-## 0.1.0 (22 May)
+## 0.1.0 (27 May)
 
-- Create `my-new-package`: a package created with `mnp`
+- Create `exiftool-context`: copy the context from `node-exiftool`
 - [repo]: `test`, `src`
