@@ -56,6 +56,7 @@ const unlinkTempFile = tempFile => new Promise((resolve, reject) =>
 
 const context = function Context() {
     this._ep = null
+    this._exiftoolConstructor = exiftool.ExiftoolProcess
 
     Object.assign(this, {
         fileDoesNotExist,
@@ -76,8 +77,16 @@ const context = function Context() {
         ep: {
             get: () => this._ep,
         },
+        exiftoolConstructor: {
+            get: () => {
+                return this._exiftoolConstructor
+            },
+            set: (value) => {
+                this._exiftoolConstructor = value
+            },
+        },
         create: { value: (bin) => {
-            const ep = new exiftool.ExiftoolProcess(
+            const ep = new this.exiftoolConstructor(
                 typeof bin === 'string' ? bin : exiftoolBin
             )
             this._ep = ep
