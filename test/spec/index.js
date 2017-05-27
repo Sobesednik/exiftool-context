@@ -21,6 +21,17 @@ const myModuleTestSuite = {
             return ctx.assertJpegMetadata(file)
         })
     },
+    'should read file with filename in utf8': (ctx) => {
+        return ctx.initAndReadMetadata(ctx.filenameWithEncoding, ['charset filename=utf8'])
+            .then((res) => {
+                assert.notEqual(res.data, null)
+                assert.equal(
+                    res.data[0].SourceFile,
+                    ctx.replaceSlashes(ctx.filenameWithEncoding)
+                )
+                assert.equal(res.error, null)
+            })
+},
 }
 
 module.exports = myModuleTestSuite
