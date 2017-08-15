@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Sobesednik/exiftool-context#readme",
   "devDependencies": {
+    "catchment": "1.0.0",
     "zoroaster": "0.4.4"
   },
   "dependencies": {

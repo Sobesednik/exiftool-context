@@ -34,7 +34,6 @@ const myModuleTestSuite = {
 }
 
 module.exports = myModuleTestSuite
-
 ```
 
 `zoroaster example/myModuleTestSuite`
@@ -109,22 +108,31 @@ An `ExiftoolProcess` instance. it is not set at first, call `ctx.create()` befor
 ### create(bin)
 
 ```js
-this._ep = new exiftool.ExiftoolProcess(bin)
+this._ep = new exiftool.ExiftoolProcess() // use dist-exiftool binary
+this._ep = new exiftool.ExiftoolProcess(bin) // use specific binary
+return this // allow chaining
 ```
 
-Create a new instance with given bin, and assign it to self.
+Create a new instance with a given bin, and assign it to self.
 
-### open(encoding, file, debug)
-
-Open a new instance
-
-### createOpen(bin)
+### open(options)
 
 ```js
-this.create(bin).open()
+if (this.ep) {
+    return this.ep.open(options)
+}
+throw new Error('ep has not been created')
 ```
 
-Create instance and open it
+Open `exiftool`.
+
+### createOpen(bin, options)
+
+```js
+this.create(bin).open(options)
+```
+
+Create an instance and open it.
 
 ### close()
 
@@ -178,15 +186,53 @@ Create a data file which can be used to open `exiftool`
 
 Write some data to the data file.
 
-### _destroy()
+### destroy()
 
 Perform the following:
 
 * unlinkTempFile(this.dataFile)
-* unlinkTempFile(this.dataFile)
 * unlinkTempFile(this.tempFile)
 
 That is, make sure that tests do not have open processes after them, or temp files.
+
+## MockSpawn
+
+Because `node-exiftool` will be spawned with `child_process.spawn`, when
+testing, we will mock the `spawn` method. To do that, use `ctx.mockSpawn()`, and
+access the process's mock with `ctx.proc`. The _process_ is an EventEmitter, and
+will emit `close` event when its `stdin` is written with `-stay_open\nfalse\n`.
+
+```js
+ctx.mockSpawn()
+const bin = 'echo'
+const args = ['hello', 'world']
+const options = {
+    cwd: HOME,
+}
+const proc = cp.spawn(bin, args, options)
+
+assert.equal(ctx.proc, proc)
+assert.equal(ctx.proc.args, { bin, args, options })
+```
+
+When args passed to `cp.spawn` include `-stay_open True`, it will automatically
+push mocked date to the process's `stderr`, simulating an opening echo.
+
+### pushStderr(data: any)
+
+Push some data to `stderr` readable stream.
+
+### pushStdout(data: any)
+
+Push some data to `stdout` readable stream.
+
+### stdinData => {{chunk: Buffer, encoding: string}}[]
+
+An array with all data written to `stdin`.
+
+### args => {{bin: string, args: string[], options: object}}
+
+Arguments passed when calling `child_process.spawn` command.
 
 ## What is a Test Context
 
