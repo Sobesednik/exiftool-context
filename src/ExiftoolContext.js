@@ -6,6 +6,7 @@ const path = require('path')
 const os = require('os')
 const exiftoolBin = require('dist-exiftool')
 const exiftool = require('node-exiftool')
+const mockProcess = require('./mock-process')
 
 let exiftoolContructor = exiftool.ExiftoolProcess // global
 
@@ -96,13 +97,21 @@ const context = function Context() {
             this._ep = ep
             return this
         }},
-        open: { value: () => {
-            if (this.ep)
-                return this.ep.open()
+        open: { value: (options) => {
+            if (this.ep) {
+                return this.ep.open(options)
+            }
             throw new Error('ep has not been created')
         }},
-        createOpen: { value: (bin) => {
-            return this.create(bin).open()
+        createOpen: { value: function (bin, options) {
+            let _bin = bin
+            let _options = options
+            // if bin is not a string and options are not given, treat it as options
+            if (options === undefined && typeof bin !== 'string') {
+                _bin = undefined
+                _options = bin
+            }
+            return this.create(_bin).open(_options)
         }},
         close: { value: () => {
             if (this.ep)
@@ -139,13 +148,23 @@ const context = function Context() {
                     return res
                 })
         }},
-        _destroy: { get: () => {
+        mockSpawn: { value: (time, id) => {
+            const proc = mockProcess.mockSpawn(time, id)
+
+            this.proc = proc
+        }},
+        _destroy: { value: () => {
             const promises = []
             if (this.ep && this.ep.isOpen) {
-                promises.push(this.ep.close())
+                const closePromise = this.ep.close()
+                promises.push(closePromise)
             }
             if (this.tempFile) {
-                promises.push(unlinkTempFile(this.tempFile))
+                const unlinkPromise = unlinkTempFile(this.tempFile)
+                promises.push(unlinkPromise)
+            }
+            if (this.proc) {
+                mockProcess.restore()
             }
             return Promise.all(promises)
         }},

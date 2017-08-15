@@ -1,11 +1,17 @@
 'use strict'
 const assert = require('assert')
 const exiftool = require('node-exiftool')
+const exiftoolBin = require('dist-exiftool')
 const ExiftoolContext = require('../../src/')
 
 class MockExiftool {
-    constructor() {
+    constructor(binary) {
         this.created = true
+        this.binary = binary
+    }
+    open(options) {
+        this.options = options
+        this.opened = true
     }
 }
 
@@ -53,6 +59,45 @@ const myModuleTestSuite = {
         assert(ctx.ep instanceof MockExiftool)
         assert(ctx.ep.created)
     },
+    create: {
+        'should create exiftool with default binary': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            ctx.create()
+            assert.equal(ctx.ep.binary, exiftoolBin)
+        },
+        'should pass binary to the constructor': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            const binary = '/usr/local/bin'
+            ctx.create(binary)
+            assert.equal(ctx.ep.binary, binary)
+        },
+    },
+    createOpen: {
+        'should pass binary to the constructor': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            const binary = '/usr/local/bin'
+            ctx.createOpen(binary)
+            assert.equal(ctx.ep.binary, binary)
+        },
+        'should pass options to the open method': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            const options = { detached: true }
+            ctx.createOpen(null, options)
+            assert.equal(ctx.ep.options, options)
+        },
+        'should pass options to the open method if specified as first argument': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            const options = { detached: true }
+            ctx.createOpen(options)
+            assert.equal(ctx.ep.binary, exiftoolBin)
+            assert.equal(ctx.ep.options, options)
+        },
+        'should open exiftool': (ctx) => {
+            ctx.exiftoolConstructor = MockExiftool
+            ctx.createOpen()
+            assert(ctx.ep.opened)
+        },
+    },
     'should be able to set and use global exiftool constructor': {
         'should set global': () => {
             ExiftoolContext.globalExiftoolConstructor = MockExiftool
@@ -63,7 +108,7 @@ const myModuleTestSuite = {
             assert(ctx.ep.created)
         },
     },
-    'should be able to unset global and use default contructor': {
+    'should be able to unset global and use default constructor': {
         'should unset global': () => {
             ExiftoolContext.globalExiftoolConstructor = null
         },
