@@ -1,6 +1,6 @@
 {
   "name": "exiftool-context",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "ExiftoolContext is a context for zoroaster which allows to use node-exiftool",
   "main": "src/index.js",
   "scripts": {
