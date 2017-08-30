@@ -1,3 +1,8 @@
+## 1.2.1, 1.3.0 (30 Aug 2017)
+
+- add `toUnicode` method
+- fix unicode fixture and document possible git on mac unicode issue
+
 ## 1.2.0 (29 Aug 2017)
 
 - allow to pass options to `open` method
