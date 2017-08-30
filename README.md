@@ -11,6 +11,12 @@ Full API description see below.
 
 `npm i --save-dev exiftool-context`
 
+## Publish
+
+This package has to be published from a Linux, and not a Mac, because it
+contains a filename with unicode encoding, which will be published in a
+different form (see [below](#filenameWithEncoding))
+
 ## How to use
 
 Just specify `ExiftoolContext` as your test suite `context`.
