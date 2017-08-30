@@ -95,7 +95,41 @@ even on windows. use this function to replace slashes on your platform.
 
 ### filenameWithEncoding
 
-`Fọto`
+Return a fixture file with utf-encoded filename.
+
+> `./etc/fixtures/Fọto.jpg`
+
+Here's some some additional info about Mac, git and unicode which can help in
+times of trouble.
+
+[Git and the Umlaut problem on Mac OS X](https://stackoverflow.com/a/5582439/1267201)
+
+[Encode to unicode](https://mothereff.in/js-escapes)
+
+Filename that we test against is:
+`\u0046\u1ECD\u0074\u006F\u002E\u006A\u0070\u0067`
+
+`Fọto.jpg`: F\u1ECDto.jpg ([Yoruba language](https://translate.google.com/#en/yo/photo)) (NFC)
+
+`Fọto.jpg`: Fo\u0323to.jpg - apparently another way to represent it (NFD)
+
+Although the actual file may be in the wanted form, if there are other
+files in the repo (probably preceding the test one) which are in another
+form, git will use their format for other files (a guess but when it was
+the case, the test was failing).
+
+```js
+// snippet to check filenames in unicode
+
+const basename = path.basename(ctx.filenameWithEncoding)
+const dir = path.dirname(ctx.filenameWithEncoding)
+
+console.log('File to read: %s', ctx.filenameWithEncoding)
+console.log('Filename in unicode to read: %s', ctx.toUnicode(basename))
+const res = fs.readdirSync(dir)
+console.log('Files in fixtures:')
+res.map(n => ` ${n}: ${ctx.toUnicode(n)}`).forEach(n => console.log(n))
+```
 
 ### assertJpegMetadata
 
@@ -194,6 +228,27 @@ Perform the following:
 * unlinkTempFile(this.tempFile)
 
 That is, make sure that tests do not have open processes after them, or temp files.
+
+### toUnicode
+
+Convert a string to unicode
+([author](http://buildingonmud.blogspot.ru/2009/06/convert-string-to-unicode-in-javascript.html)).
+
+```js
+// http://buildingonmud.blogspot.ru/2009/06/convert-string-to-unicode-in-javascript.html
+function toUnicode(theString) {
+    let unicodeString = ''
+    for (var i=0; i < theString.length; i++) {
+        let theUnicode = theString.charCodeAt(i).toString(16).toUpperCase()
+        while (theUnicode.length < 4) {
+            theUnicode = '0' + theUnicode
+        }
+        theUnicode = '\\u' + theUnicode
+        unicodeString += theUnicode
+    }
+    return unicodeString
+}
+```
 
 ## MockSpawn
 

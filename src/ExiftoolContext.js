@@ -24,6 +24,20 @@ const folder = path.join(etcDir, fixturesDir, 'CANON')
 const emptyFolder = path.join(etcDir, fixturesDir, 'empty')
 const filenameWithEncoding = path.join(etcDir, fixturesDir, 'Fọto.jpg')
 
+// http://buildingonmud.blogspot.ru/2009/06/convert-string-to-unicode-in-javascript.html
+function toUnicode(theString) {
+    let unicodeString = ''
+    for (var i=0; i < theString.length; i++) {
+        let theUnicode = theString.charCodeAt(i).toString(16).toUpperCase()
+        while (theUnicode.length < 4) {
+            theUnicode = '0' + theUnicode
+        }
+        theUnicode = '\\u' + theUnicode
+        unicodeString += theUnicode
+    }
+    return unicodeString
+}
+
 // create temp file for writing metadata
 function makeTempFile() {
     const n = Math.floor(Math.random() * 100000)
@@ -70,6 +84,7 @@ const context = function Context() {
         emptyFolder,
         filenameWithEncoding,
         assertJpegMetadata,
+        toUnicode,
     })
 
     Object.defineProperties(this, {

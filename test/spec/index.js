@@ -117,6 +117,10 @@ const myModuleTestSuite = {
             assert(ctx.ep instanceof exiftool.ExiftoolProcess)
         },
     },
+    'should convert a string to unicode': (ctx) => {
+        const res = ctx.toUnicode('Fọto.jpg')
+        assert.equal(res, '\\u0046\\u1ECD\\u0074\\u006F\\u002E\\u006A\\u0070\\u0067')
+    },
 }
 
 module.exports = myModuleTestSuite
