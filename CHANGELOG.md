@@ -1,3 +1,7 @@
+## 1.3.1 (30 Aug 2017)
+
+- publish from Linux
+
 ## 1.2.1, 1.3.0 (30 Aug 2017)
 
 - add `toUnicode` method
