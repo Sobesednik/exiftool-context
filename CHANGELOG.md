@@ -1,3 +1,7 @@
+## 1.4.0 (31 Aug 2017)
+
+- statically export `exiftoolBin` as path to `dist-exiftool`
+
 ## 1.3.1 (30 Aug 2017)
 
 - publish from Linux
