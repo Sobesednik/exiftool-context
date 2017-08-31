@@ -196,6 +196,9 @@ Object.defineProperties(context, {
             exiftoolContructor = exiftool.ExiftoolProcess
         }
     }},
+    exiftoolBin: {
+        get: () => exiftoolBin,
+    },
 })
 
 module.exports = context

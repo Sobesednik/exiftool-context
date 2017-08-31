@@ -121,6 +121,9 @@ const myModuleTestSuite = {
         const res = ctx.toUnicode('Fọto.jpg')
         assert.equal(res, '\\u0046\\u1ECD\\u0074\\u006F\\u002E\\u006A\\u0070\\u0067')
     },
+    'should statically export path to dist-exiftool': () => {
+        assert.equal(ExiftoolContext.exiftoolBin, exiftoolBin)
+    },
 }
 
 module.exports = myModuleTestSuite
